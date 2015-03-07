@@ -22,6 +22,9 @@
     }
   ],
   "main": "lib/work-it",
+  "bin": {
+    "workit": "bin/workit"
+  },
   "engines": {
     "node": ">= 0.10.0"
   },
@@ -29,6 +32,8 @@
     "access-mongo": "^0.1.0",
     "aws-sdk": "^2.1.16",
     "byline": "^4.2.1",
+    "minimist": "^1.1.0",
+    "moment": "^2.9.0",
     "msgpack": "^0.2.6",
     "node-kestrel": "0.0.4",
     "node-uuid": "^1.4.3",

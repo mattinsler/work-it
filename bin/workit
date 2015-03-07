@@ -1,0 +1,75 @@
+#!/usr/bin/env node
+
+var fs = require('fs');
+var path = require('path');
+var workit = require('../');
+
+var argv = require('minimist')(process.argv.slice(2));
+
+var usage = function(message) {
+  if (message) {
+    console.log('Error:', message);
+    console.log();
+  }
+  console.log('Usage: workit [options] <command-name> <worker-file>');
+  console.log();
+  console.log('Options:');
+  console.log('  -c <file>         Config file         [default: workit.json]');
+  console.log('  -k <concurrency>  Concurrency level   [default: 1]');
+  console.log();
+  
+  process.exit(1);
+};
+
+if (argv._.length !== 2) { usage(); }
+
+var commandName = argv._[0];
+var workerFile = path.resolve(process.cwd(), argv._[1]);
+
+if (!fs.existsSync(workerFile)) { usage('Could not find worker file at ' + workerFile); }
+
+var getProvider = function(providers, configValue) {
+  var type = Object.keys(configValue)[0];
+  var value = configValue[type];
+  var providerType = providers.get(type);
+  if (!providerType) {
+    throw new Error('Could not find provider ' + type);
+  }
+  return providerType(value);
+};
+
+
+var configFile = path.resolve(process.cwd(), argv.c || 'workit.json');
+
+if (!fs.existsSync(configFile)) {
+  throw new Error('Could not find config file at ' + configFile);
+}
+
+var config = require(configFile);
+
+var opts = {};
+opts.queueProvider = getProvider(workit.Providers.Queue, config.queueProvider);
+opts.statusProvider = workit.Providers.TaskStatus({
+  storageProvider: getProvider(workit.Providers.TaskStatusStorage, config.statusProvider.storageProvider),
+  eventsProvider: getProvider(workit.Providers.TaskStatusEvents, config.statusProvider.eventsProvider)
+});
+opts.handler = workit.Executor.create(workerFile, {
+  logProvider: getProvider(workit.Providers.Log, config.logProvider)
+});
+
+opts.command = commandName;
+opts.concurrency = argv.k || 1;
+
+var worker = workit.Worker(opts);
+
+worker.start().then(function() {
+  console.log('Worker started...');
+});
+
+process.on('SIGINT', function() {
+  console.log('Worker stopping...');
+  worker.stop().then(function() {
+    console.log('Worker stopped...');
+    process.exit();
+  });
+});
