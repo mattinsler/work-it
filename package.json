@@ -23,7 +23,7 @@
   ],
   "main": "lib/work-it",
   "bin": {
-    "workit": "bin/workit"
+    "work-it": "bin/work-it"
   },
   "engines": {
     "node": ">= 0.10.0"

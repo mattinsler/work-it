@@ -11,7 +11,10 @@ var usage = function(message) {
     console.log('Error:', message);
     console.log();
   }
-  console.log('Usage: workit [options] <command-name> <worker-file>');
+  console.log('Usage: work-it [options] <command-name> <worker-file>');
+  console.log('Usage: work-it -v');
+  console.log();
+  console.log('Version:', workit.version);
   console.log();
   console.log('Options:');
   console.log('  -c <file>         Config file         [default: workit.json]');
@@ -20,6 +23,11 @@ var usage = function(message) {
   
   process.exit(1);
 };
+
+if (argv.v) {
+  console.log(workit.version);
+  process.exit();
+}
 
 if (argv._.length !== 2) { usage(); }
 
