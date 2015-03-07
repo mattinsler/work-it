@@ -1,0 +1,43 @@
+{
+  "name": "work-it",
+  "description": "Worker system with pluggable components",
+  "version": "0.0.1",
+  "homepage": "https://github.com/mattinsler/work-it",
+  "author": {
+    "name": "Matt Insler",
+    "email": "matt.insler@gmail.com",
+    "url": "http://www.mattinsler.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/mattinsler/work-it.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mattinsler/work-it/issues"
+  },
+  "licenses": [
+    {
+      "type": "MIT",
+      "url": "https://github.com/mattinsler/work-it/blob/master/LICENSE-MIT"
+    }
+  ],
+  "main": "lib/work-it",
+  "engines": {
+    "node": ">= 0.10.0"
+  },
+  "dependencies": {
+    "access-mongo": "^0.1.0",
+    "aws-sdk": "^2.1.16",
+    "byline": "^4.2.1",
+    "msgpack": "^0.2.6",
+    "node-kestrel": "0.0.4",
+    "node-uuid": "^1.4.3",
+    "q": "^1.1.2",
+    "redis": "^0.12.1",
+    "redis-builder": "^1.0.1"
+  },
+  "devDependencies": {},
+  "keywords": [
+    "worker"
+  ]
+}
