@@ -10,14 +10,13 @@ var usage = function(message) {
     console.log('Error:', message);
     console.log();
   }
-  console.log('Usage: work-it [options] <command-name> <worker-file>');
-  console.log('Usage: work-it -v');
+  console.log('Usage: schedule-it [options] <command-name> <task-data>');
+  console.log('Usage: schedule-it -v');
   console.log();
   console.log('Version:', workit.version);
   console.log();
   console.log('Options:');
   console.log('  -c <file>         Config file         [default: workit.json]');
-  console.log('  -k <concurrency>  Concurrency level   [default: 1]');
   console.log();
   
   process.exit(1);
@@ -31,22 +30,27 @@ if (argv.v) {
 if (argv._.length !== 2) { usage(); }
 
 var commandName = argv._[0];
-var workerFile = path.resolve(process.cwd(), argv._[1]);
+var taskData;
+try {
+  taskData = JSON.parse(argv._[1]);
+} catch (err) {
+  usage(err.message);
+}
 var configFile = path.resolve(process.cwd(), argv.c || 'workit.json');
 
 try {
-  var worker = workit.configureFromFile(configFile).worker(commandName, workerFile, {concurrency: argv.k});
-
-  worker.start().then(function() {
-    console.log('Worker started...');
+  var taskManager = workit.configureFromFile(configFile).taskManager();
+  
+  var task = taskManager.queueTask(commandName, taskData);
+  
+  task.on('start', function() {
+    console.log('Task', task.id, 'started');
+    console.log(arguments)
   });
 
-  process.on('SIGINT', function() {
-    console.log('Worker stopping...');
-    worker.stop().then(function() {
-      console.log('Worker stopped...');
-      process.exit();
-    });
+  task.on('finish', function() {
+    console.log('Task', task.id, 'finished');
+    console.log(arguments);
   });
 } catch (err) {
   usage(err.message);
