@@ -65,9 +65,14 @@ process.on('SIGINT', function() {
 var taskManager = ...;
 
 // queue a new task
-var taskTracker = taskManager.queueTask('send-email', {to: 'matt.insler@gmail.com', subject: 'Hello', body: "What's up!"});
-// You can get the task ID from the tracker
-console.log(taskTracker.id);
+taskManager.queueTask('send-email', {
+  to: 'matt.insler@gmail.com',
+  subject: 'Hello',
+  body: "What's up!"
+}).then(function(taskTracker) {
+  // You can get the task ID from the tracker
+  console.log(taskTracker.id);
+});
 
 // or track a task by ID
 var taskTracker = taskManager.taskTracker('some-task-id');
