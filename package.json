@@ -1,7 +1,7 @@
 {
   "name": "work-it",
   "description": "Worker system with pluggable components",
-  "version": "0.0.13",
+  "version": "0.1.0",
   "homepage": "https://github.com/mattinsler/work-it",
   "author": {
     "name": "Matt Insler",
@@ -21,7 +21,7 @@
       "url": "https://github.com/mattinsler/work-it/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "lib/work-it",
+  "main": "lib2/work-it",
   "bin": {
     "work-it": "bin/work-it",
     "schedule-it": "bin/schedule-it"

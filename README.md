@@ -10,26 +10,23 @@ Worker system with pluggable components
 var workit = require('work-it');
 
 var configured = workit.configure({
-  queueProvider: {
-    redis: 'redis://localhost/4'
+  redis: 'redis://localhost/12',
+  queues: {
+    '*': 'redis'
   },
-  statusProvider: {
-    eventsProvider: {
-      redis: 'redis://localhost/4'
-    },
-    storageProvider: {
-      mongodb: {
-        url: 'mongodb://localhost/tasks',
-        collection: 'statuses'
+  loggers: [
+    'console',
+    {console: ''}       // optional way to specify a logger with no config
+    {
+      s3: {
+        accessKeyId: '...',
+        secretAccessKey: '...',
+        bucket: 'task-logs'
       }
     }
-  },
-  logProvider: {
-    s3: {
-      accessKeyId: '...',
-      secretAccessKey: '...',
-      bucket: 'task-logs'
-    }
+  ],
+  storage: {
+    mongodb: 'mongodb://localhost/work'
   }
 });
 
@@ -85,4 +82,9 @@ taskTracker.on('start', function(data) {
 taskTracker.on('finish', function(data) {
   console.log('FINISH', data);
 });
+
+// tasks currently working
+taskManager.workingTasks().then(console.log);
+// tasks older than 5 seconds ago
+taskManager.workingTasksOlderThan(5000).then(console.log);
 ```

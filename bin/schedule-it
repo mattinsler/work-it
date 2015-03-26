@@ -38,11 +38,9 @@ try {
 }
 var configFile = path.resolve(process.cwd(), argv.c || 'workit.json');
 
-try {
-  var taskManager = workit.configureFromFile(configFile).taskManager();
-  
-  var task = taskManager.queueTask(commandName, taskData);
-  
+var taskManager = workit.configureFromFile(configFile).taskManager();
+
+taskManager.queueTask(commandName, taskData).then(function(task) {
   task.on('start', function() {
     console.log('Task', task.id, 'started');
     console.log(arguments)
@@ -52,6 +50,6 @@ try {
     console.log('Task', task.id, 'finished');
     console.log(arguments);
   });
-} catch (err) {
-  usage(err.message);
-}
+}).catch(function(err) {
+  usage(err.stack);
+});
