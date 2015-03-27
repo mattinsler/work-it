@@ -6,28 +6,38 @@ var TaskTracker = require('./task-tracker');
 var TaskManager = function(configuration) {
   this.configuration = configuration;
   
+  this.workingSet = configuration.workingSet;
+  this.redisClient = configuration.redisClient;
+  
   // this.on = this.statusProvider.on.bind(this.statusProvider);
   // this.removeListener = this.statusProvider.removeListener.bind(this.statusProvider);
-  
-  var redisClient;
-  this.__defineGetter__('redisClient', function() {
-    if (!redisClient) {
-      redisClient = this.configuration.createRedisClient();
-    }
-    return redisClient;
-  });
 };
 
-TaskManager.prototype.queueTask = function(queueName, data) {
-  var task = {
+TaskManager.prototype.createTaskObject = function(data) {
+  return {
     id: uuid.v4(),
     ts: Date.now(),
     data: data || {}
   };
+};
+
+TaskManager.prototype.queueTask = function(queueName, data) {
+  var task = this.createTaskObject(data);
   
   var self = this;
-  return this.configuration.getQueue(queueName).push(task).then(function() {
+  return this.configuration.getQueue(queueName).push(encoder.encode(task)).then(function() {
     return self.taskTracker(task.id);
+  });
+};
+
+TaskManager.prototype.startTaskWork = function(queueName, data, opts) {
+  if (!opts || !opts.retry) {
+    return q.reject(new Error('TaskManager::startTaskWork requires you pass {popper: ..., retry: ...} as the third parameter'));
+  }
+  
+  var message = (opts.popper || '') + '|' + opts.retry + '|' + encoder.encode(this.createTaskObject(data));
+  return this.redisClient.zadd(this.workingSet, Date.now(), message).then(function() {
+    return message;
   });
 };
 

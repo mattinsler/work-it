@@ -1,12 +1,19 @@
 var Worker = require('./worker');
-var RedisQueue = require('./redis-queue');
+var Providers = require('./providers');
 var RedisClient = require('./redis-client');
 var TaskManager = require('./task-manager');
 
 var Configuration = function(config) {
   this.config = config;
-  
   this.workingSet = 'working';
+  
+  var redisClient;
+  this.__defineGetter__('redisClient', function() {
+    if (!redisClient) {
+      redisClient = this.createRedisClient();
+    }
+    return redisClient;
+  });
 };
 
 Configuration.prototype.createRedisClient = function() {
@@ -20,17 +27,18 @@ Configuration.prototype.createRedisClient = function() {
 };
 
 Configuration.prototype.getQueue = function(queueName, realName) {
-  if (this.config.queues[queueName]) {
-    if (this.config.queues[queueName] === 'redis') {
-      var redisProvider = this.createRedisClient.bind(this);
-      return new RedisQueue(redisProvider, {
-        queue: realName || queueName,
-        workingSet: 'working'
-        // retry: ''
-      });
-    }
-  } else {
+  if (!realName) { realName = queueName; }
+  var queueConfig = this.config.queues[queueName];
+  
+  if (!queueConfig) {
+    if (queueName === '*') { throw new Error('Could not find a queue configuration for ' + realName + '. You must at least define a queue configuration for *.'); }
     return this.getQueue('*', queueName);
+  }
+  
+  if (queueConfig === 'redis') {
+    return Providers.get('queue', 'redis', this).get(realName);
+  } else {
+    return Providers.get('queue', queueConfig, this).get(realName);
   }
 };
 

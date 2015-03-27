@@ -52,8 +52,12 @@ ChildProcess.prototype.start = function() {
       var err = new Error('Uncaught Exception: ' + message.error.message);
       err.name = message.error.name;
       err.stack = message.error.stack || message.error.message;
-      self.current.deferred.reject(err);
-      delete self.current;
+      if (self.current) {
+        self.current.deferred.reject(err);
+        delete self.current;
+      } else {
+        console.log(err.stack);
+      }
     }
   });
   

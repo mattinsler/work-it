@@ -2,9 +2,10 @@ var q = require('q');
 var Backoff = require('./backoff');
 var encoder = require('./encoder');
 
-var RedisQueue = function(redisProvider, opts) {
+var RedisQueue = function(redisClient, opts) {
   this.name = opts.queue;
   this.workingSet = opts.workingSet;
+  this.redisClient = redisClient;
   
   this.taskQueue = 'q:' + this.name;
   this.retryQueue = 'q:' + (opts.retry || this.name);
@@ -12,28 +13,11 @@ var RedisQueue = function(redisProvider, opts) {
   this.poppers = [];
   
   this.backoff = new Backoff(this._cycle, this);
-  
-  var pushClient;
-  this.__defineGetter__('pushClient', function() {
-    if (!pushClient) {
-      pushClient = redisProvider();
-    }
-    return pushClient;
-  });
-  
-  var popClient;
-  this.__defineGetter__('popClient', function() {
-    if (!popClient) {
-      popClient = redisProvider();
-    }
-    return popClient;
-  });
 };
 
 RedisQueue.prototype.push = function(message) {
   if (!message) { return q(); }
-  if (!message.id) { return q.reject(new Error('Messages pushed to a RedisQueue must include an id')); }
-  return this.pushClient.lpush(this.taskQueue, encoder.encode(message));
+  return this.redisClient.lpush(this.taskQueue, message);
 };
 
 RedisQueue.prototype.pop = function(id) {
@@ -49,11 +33,11 @@ RedisQueue.prototype.pop = function(id) {
 };
 
 RedisQueue.prototype.complete = function(message) {
-  return this.pushClient.zrem(this.workingSet, message);
+  return this.redisClient.zrem(this.workingSet, message);
 };
 
 RedisQueue.prototype.heartbeat = function(message) {
-  return this.pushClient.zadd(this.workingSet, Date.now(), message);
+  return this.redisClient.zadd(this.workingSet, Date.now(), message);
 };
 
 RedisQueue.prototype._cycle = function() {
@@ -62,14 +46,10 @@ RedisQueue.prototype._cycle = function() {
   var self = this;
   var popper = this.poppers.pop();
   
-  // need to append or prepend retry queue
-  // should also append/prepend machine-id/worker-id
-  // pass machine/worker ID to rpopzadd so that it exists in the working set
-  
-  // prepend with retry queue
+  // prepend with machine/worker id and retry queue
   var prefix = (popper.id || '') + '|' + this.retryQueue + '|';
   
-  this.popClient.scripts.rpopzadd(this.taskQueue, this.workingSet, Date.now(), prefix).then(function(message) {
+  this.redisClient.scripts.rpopzadd(this.taskQueue, this.workingSet, Date.now(), prefix).then(function(message) {
     if (message) {
       var match = /^([^|]*)\|([^|]+)\|(.*)$/.exec(message);
       var task = encoder.decode(match[3]);

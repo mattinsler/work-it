@@ -25,9 +25,9 @@ var handler;
 
 process.on('message', function(message) {
   if (message.type === 'init') {
-    handler = require(message.init);
-    
     q().then(function() {
+      handler = require(message.init);
+      
       if (typeof(handler.init) === 'function') {
         return q.when(handler.init());
       }

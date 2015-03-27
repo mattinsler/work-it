@@ -71,6 +71,23 @@ taskManager.queueTask('send-email', {
   console.log(taskTracker.id);
 });
 
+/*
+  There are some cases where you'd like to have a pull "queue" rather
+  than a push queue. In this case, you'll need to tell the TaskManager
+  about the task when it gets pulled. You can call this method and return
+  the value it creates to the requesting client.
+*/
+taskManager.startTaskWork('send-email', {
+  to: 'matt.insler@gmail.com',
+  subject: 'Hello Pull Queue',
+  body: "What's up!"
+}, {
+  popper: popperId,     // string
+  retry: retryQueueName // string
+}).then(function(taskSlug) {
+  // send `taskSlug` to the requesting client
+});
+
 // or track a task by ID
 var taskTracker = taskManager.taskTracker('some-task-id');
 
