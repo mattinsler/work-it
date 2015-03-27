@@ -1,10 +1,14 @@
 var providers = {
   Logger: {
-    // Console: require('./console-logger-provider')
+    Console: require('./console-logger-provider'),
+    S3: require('./s3-logger-provider')
   },
   Queue: {
     Http: require('./http-queue-provider'),
     Redis: require('./redis-queue-provider')
+  },
+  Storage: {
+    Mongodb: require('./mongodb-storage-provider')
   }
 };
 

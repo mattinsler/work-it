@@ -7,8 +7,9 @@ var EventEmitter = require('events').EventEmitter;
 var NODE_PATH = process.execPath;
 var CHILD_PATH = require.resolve('./worker-child.js');
 
-var ChildProcess = function(processPath) {
+var ChildProcess = function(processPath, loggerProvider) {
   this.path = processPath;
+  this.loggerProvider = loggerProvider;
   
   this.__defineGetter__('active', function() {
     return !!this.current;
@@ -29,8 +30,8 @@ ChildProcess.prototype.start = function() {
     stdio: ['pipe', 'pipe', 'pipe', 'ipc']
   });
   
-  this.proc.stdout.pipe(process.stdout);
-  this.proc.stderr.pipe(process.stderr);
+  this.proc.stdout.pipe(new LineStream({keepEmptyLines: true})).on('data', this.log.bind(this));
+  this.proc.stderr.pipe(new LineStream({keepEmptyLines: true})).on('data', this.log.bind(this));
   
   this.proc.on('message', function(message) {
     // console.log(message);
@@ -40,36 +41,23 @@ ChildProcess.prototype.start = function() {
     } else if (message.type === 'heartbeat') {
       self.emit('heartbeat', self);
     } else if (message.type === 'success') {
-      self.current.deferred.resolve(message.success);
-      delete self.current;
+      self.finishExecution(null, message.success);
     } else if (message.type === 'failure') {
       var err = new Error(message.failure.message);
       err.name = message.failure.name;
       err.stack = message.failure.stack || message.failure.message;
-      self.current.deferred.reject(err);
-      delete self.current;
+      self.finishExecution(err);
     } else if (message.type === 'error') {
       var err = new Error('Uncaught Exception: ' + message.error.message);
       err.name = message.error.name;
       err.stack = message.error.stack || message.error.message;
-      if (self.current) {
-        self.current.deferred.reject(err);
-        delete self.current;
-      } else {
-        console.log(err.stack);
-      }
+      self.finishExecution(err);
     }
   });
   
   this.proc.on('exit', function() {
     // crap, this shouldn't happen
-    
-    // check if you still have a current and error out
-    if (self.current) {
-      self.current.deferred.reject(new Error('Process exited unexpectedly'));
-      delete self.current;
-    }
-    // finish logger
+    self.finishExecution(new Error('Process exited unexpectedly'));
   });
   
   this.proc.send({
@@ -84,15 +72,37 @@ ChildProcess.prototype.stop = function() {
   this.proc.kill();
 };
 
-ChildProcess.prototype.execute = function(data, envelope) {
-  if (this.current) { throw new Error('Already executing a command in this process'); }
-  
+ChildProcess.prototype.startExecution = function(data, envelope) {
   this.current = {
     data: data,
     envelope: envelope,
-    // logger: ...
+    logger: this.loggerProvider.get(envelope.id, envelope.execution),
     deferred: q.defer()
   };
+};
+
+ChildProcess.prototype.finishExecution = function(err, data) {
+  if (!this.current) {
+    if (err) { console.log(err.stack); }
+    return;
+  }
+  
+  var self = this;
+  
+  this.current.logger.end().then(function() {
+    if (err) {
+      self.current.deferred.reject(err);
+    } else {
+      self.current.deferred.resolve(data);
+    }
+    delete self.current;
+  });
+};
+
+ChildProcess.prototype.execute = function(data, envelope) {
+  if (this.current) { throw new Error('Already executing a command in this process'); }
+  
+  this.startExecution(data, envelope);
   
   this.proc.send({
     type: 'execute',
@@ -103,6 +113,12 @@ ChildProcess.prototype.execute = function(data, envelope) {
   });
   
   return this.current.deferred.promise;
+};
+
+ChildProcess.prototype.log = function(message) {
+  if (this.current && this.current.logger) {
+    this.current.logger.log(message);
+  }
 };
 
 module.exports = ChildProcess;

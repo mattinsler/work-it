@@ -45,6 +45,18 @@ Configuration.prototype.getQueue = function(queueName, realName) {
 Configuration.prototype.worker = function(queueName, handlerPath, opts) {
   if (!opts) { opts = {}; }
   opts.handler = handlerPath;
+  
+  var self = this;
+  var loggerProviders = this.config.loggers.map(function(logConfig) {
+    return Providers.get('logger', logConfig, self);
+  });
+  if (loggerProviders.length === 0) {
+    loggerProviders.push(Providers.get('logger', 'console', this));
+  }
+  opts.loggerProvider = require('./logger-provider')(loggerProviders);
+  
+  opts.storageProvider = Providers.get('storage', this.config.storage, this);
+  
   return new Worker(this.getQueue(queueName), opts);
 };
 

@@ -15,18 +15,11 @@ var Worker = function(queue, opts) {
   
   this.concurrency = opts.concurrency || 1;
   this.handlerPath = opts.handler;
-  
+  this.loggerProvider = opts.loggerProvider;
+  this.storageProvider = opts.storageProvider;
   
   // if (!opts.command) { throw new Error('You must configure a Worker with a command'); }
   // if (!opts.queueProvider) { throw new Error('You must configure a Worker with a queue provider'); }
-  
-  //
-  // this.command = opts.command;
-  // this.monitoring = opts.monitoring;
-  // this.queueProvider = opts.queueProvider;
-  // this.statusProvider = opts.statusProvider;
-  // this.handler = opts.handler;
-  // this.concurrency = opts.concurrency || 1;
   
   this.running = false;
   this.workers = {
@@ -56,7 +49,7 @@ Worker.prototype.start = function() {
   }.bind(this);
   
   for (var x = 0; x < this.concurrency; ++x) {
-    var proc = new ChildProcess(this.handlerPath);
+    var proc = new ChildProcess(this.handlerPath, this.loggerProvider);
     proc.on('heartbeat', this.onHeartbeat);
     this.workers.inactive.push(proc);
   }
@@ -110,91 +103,6 @@ Worker.prototype.stop = function() {
 //   return worker.handler.stats();
 // };
 
-// Worker.prototype._startTask = function(taskEnvelope) {
-//   var now = Date.now();
-//   var task = taskEnvelope.task;
-//   task.execution = now;
-//
-//   // setup logging, record times, start kill timer, etc.
-//   this.workers[task.id] = {
-//     execution: now,
-//     startedAt: now,
-//     stats: []
-//   };
-//
-//   if (this.statusProvider) {
-//     this.statusProvider.get(task.id, now).start({
-//       command: this.command,
-//       data: task.data,
-//       queuedAt: task.ts,
-//       startedAt: now
-//     });
-//   }
-//
-//   console.log([
-//     'Task ' + task.id + ' [' + this.command + ']',
-//     '  - Queued : ' + moment(task.ts).format(),
-//     '  - Started: ' + moment(now).format() + ' (' + duration(now - task.ts) + ')'
-//   ].join('\n'));
-//
-//   return this.workers[task.id];
-// };
-//
-// Worker.prototype._finishTask = function(taskEnvelope, err) {
-//   var now = Date.now();
-//   var task = taskEnvelope.task;
-//   var worker = this.workers[task.id];
-//
-//   worker.finishedAt = now;
-//   worker.success = !!!err;
-//   worker.error = err;
-//
-//   if (this.statusProvider) {
-//     this.statusProvider.get(task.id, worker.execution).finish({
-//       finishedAt: worker.finishedAt,
-//       success: worker.success,
-//       error: worker.error ? worker.error.stack : undefined,
-//       env: process.env,
-//       logs: task.logs ? task.logs : undefined
-//     });
-//   }
-//
-//   console.log([
-//     'Task ' + task.id + ' [' + this.command + ']',
-//     '  - Queued  : ' + moment(task.ts).format(),
-//     '  - Started : ' + moment(worker.startedAt).format() + ' (' + duration(worker.startedAt - task.ts) + ')',
-//     '  - Finished: ' + moment(now).format() + ' (' + duration(now - worker.startedAt) + ')',
-//     '  - Success : ' + (worker.success ? 'YES' : 'NO')
-//   ].join('\n'));
-//
-//   delete this.workers[task.id];
-// };
-
-// Worker.prototype._executeTask = function(taskEnvelope) {
-//   var task = taskEnvelope.task;
-//
-//   var self = this;
-//   var worker = this._startTask(taskEnvelope);
-//   worker.handler = this.handler(task.data, task);
-//   worker.handler.on('heartbeat', function() {
-//     console.log('HEARTBEAT', task.id);
-//     self.beat(task.id);
-//   });
-//
-//   return q.when(worker.handler.execute()).then(function() {
-//     return self._finishTask(taskEnvelope);
-//   }).catch(function(err) {
-//     console.log('Worker Error:');
-//     err.stack.split('\n').map(function(line) {
-//       return console.log('Worker Error:', line);
-//     });
-//     console.log('Worker Error:');
-//
-//     // nerfs error reponse to always complete job and not abort it
-//     return self._finishTask(taskEnvelope, err);
-//   });
-// };
-
 Worker.prototype.startTask = function(envelope) {
   var now = Date.now();
   
@@ -214,15 +122,12 @@ Worker.prototype.startTask = function(envelope) {
     stats: []
   };
   
-  // save status to mongodb
-  // if (this.statusProvider) {
-  //   this.statusProvider.get(task.id, now).start({
-  //     command: this.command,
-  //     data: task.data,
-  //     queuedAt: task.ts,
-  //     startedAt: now
-  //   });
-  // }
+  this.storageProvider.get(task.id, now).start({
+    queue: this.queue.name,
+    data: task.data,
+    queuedAt: task.ts,
+    startedAt: now
+  });
   
   console.log([
     'Task ' + task.id + ' [' + this.queue.name + ']',
@@ -248,17 +153,13 @@ Worker.prototype.finishTask = function(envelope, err) {
   taskData.success = !!!err;
   taskData.error = err;
   
-  // save to mongodb
-  // if (this.statusProvider) {
-  //   this.statusProvider.get(task.id, worker.execution).finish({
-  //     finishedAt: worker.finishedAt,
-  //     success: worker.success,
-  //     error: worker.error ? worker.error.stack : undefined,
-  //     env: process.env,
-  //     logs: task.logs ? task.logs : undefined
-  //   });
-  // }
-
+  this.storageProvider.get(task.id, taskData.execution).finish({
+    finishedAt: taskData.finishedAt,
+    success: taskData.success,
+    error: taskData.error ? taskData.error.stack : undefined,
+    env: process.env
+  });
+  
   console.log([
     'Task ' + task.id + ' [' + this.queue.name + ']',
     '  - Queued  : ' + moment(task.ts).format(),
