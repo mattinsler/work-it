@@ -192,14 +192,22 @@ Worker.prototype.executeTask = function(envelope) {
 Worker.prototype._cycle = function() {
   if (this.running === false) { return; }
   if (this.workers.inactive.length === 0) { return; }
+  if (this._popping === true) { return; }
+  
+  this._popping = true;
   
   var self = this;
   
   this.queue.pop().then(function(envelope) {
-    return self.executeTask(envelope);
+    self.executeTask(envelope).catch(function(err) {
+      console.log(err.stack);
+    }).finally(function() {
+      setImmediate(self._cycle.bind(self));
+    });
   }).catch(function(err) {
     console.log(err.stack);
   }).finally(function() {
+    self._popping = false;
     setImmediate(self._cycle.bind(self));
   });
 };

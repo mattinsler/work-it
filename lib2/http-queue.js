@@ -67,13 +67,9 @@ HttpQueue.prototype._cycle = function() {
     }
     
     if (res && typeof(res.statusCode) === 'number' && res.statusCode === 200) {
-      console.log('HTTP Queue Response', res.body);
-      
       var message = res.body;
       var match = /^([^|]*)\|([^|]+)\|(.*)$/.exec(message);
       var task = encoder.decode(match[3]);
-      
-      console.log(task);
       
       popper.deferred.resolve({
         id: message,
