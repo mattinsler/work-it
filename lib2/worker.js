@@ -44,7 +44,6 @@ Worker.prototype.start = function() {
   
   this.onHeartbeat = function(worker) {
     if (!worker.taskId) { return; }
-    console.log('Got heartbeat from worker for task', worker.taskId);
     this.queue.heartbeat(worker.envelopeId);
   }.bind(this);
   

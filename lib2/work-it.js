@@ -2,6 +2,8 @@ var fs = require('fs');
 var path = require('path');
 var Configuration = require('./configuration');
 
+exports.version = require('../package.json').version;
+
 exports.configure = function(config) {
   return new Configuration(config);
 };

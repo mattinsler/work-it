@@ -22,6 +22,11 @@ Configuration.prototype.createRedisClient = function() {
       luafile: require.resolve('../lua/rpopzadd.lua'),
       keys: 2,
       args: 2
+    },
+    retrytasks: {
+      luafile: require.resolve('../lua/retrytasks.lua'),
+      keys: 1,
+      args: 1
     }
   });
 };

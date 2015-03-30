@@ -1,7 +1,7 @@
 {
   "name": "work-it",
   "description": "Worker system with pluggable components",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "homepage": "https://github.com/mattinsler/work-it",
   "author": {
     "name": "Matt Insler",
@@ -24,7 +24,8 @@
   "main": "lib2/work-it",
   "bin": {
     "work-it": "bin/work-it",
-    "schedule-it": "bin/schedule-it"
+    "schedule-it": "bin/schedule-it",
+    "reap-it": "bin/reap-it"
   },
   "engines": {
     "node": ">= 0.10.0"
@@ -33,6 +34,7 @@
     "access-mongo": "^0.1.0",
     "aws-sdk": "^2.1.16",
     "byline": "^4.2.1",
+    "chalk": "^1.0.0",
     "kestrel.node": "^0.2.0",
     "minimist": "^1.1.0",
     "moment": "^2.9.0",
