@@ -21,7 +21,7 @@
       "url": "https://github.com/mattinsler/work-it/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "lib2/work-it",
+  "main": "lib/work-it",
   "bin": {
     "work-it": "bin/work-it",
     "schedule-it": "bin/schedule-it",
@@ -35,6 +35,7 @@
     "aws-sdk": "^2.1.16",
     "byline": "^4.2.1",
     "chalk": "^1.0.0",
+    "debug": "^2.1.3",
     "kestrel.node": "^0.2.0",
     "minimist": "^1.1.0",
     "moment": "^2.9.0",

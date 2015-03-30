@@ -46,7 +46,7 @@ console.log('  - Task Timeout    :', chalk.magenta(taskTimeout));
 console.log('  - Redis URL       :', chalk.magenta(redisURL));
 console.log();
 
-var RedisClient = require('../lib2/redis-client');
+var RedisClient = require('../lib/redis-client');
 var client = new RedisClient(redisURL, {}, {
   rpopzadd: {
     luafile: require.resolve('../lua/rpopzadd.lua'),
