@@ -71,6 +71,13 @@ taskManager.queueTask('send-email', {
   console.log(taskTracker.id);
 });
 
+// optionally you can add tags that can be searched for later
+taskManager.queueTask('test', {
+  foo: 'bar'
+}, {
+  tags: ['hello', 'world']
+});
+
 /*
   There are some cases where you'd like to have a pull "queue" rather
   than a push queue. In this case, you'll need to tell the TaskManager
@@ -82,8 +89,9 @@ taskManager.startTaskWork('send-email', {
   subject: 'Hello Pull Queue',
   body: "What's up!"
 }, {
-  popper: popperId,     // string
-  retry: retryQueueName // string
+  popper: popperId,         // string
+  retry: retryQueueName,    // string
+  tags: ['hello', 'world']  // optional list of strings
 }).then(function(taskSlug) {
   // send `taskSlug` to the requesting client
 });
