@@ -1,7 +1,7 @@
 {
   "name": "work-it",
   "description": "Worker system with pluggable components",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "homepage": "https://github.com/mattinsler/work-it",
   "author": {
     "name": "Matt Insler",
@@ -24,8 +24,7 @@
   "main": "lib/work-it",
   "bin": {
     "work-it": "bin/work-it",
-    "schedule-it": "bin/schedule-it",
-    "reap-it": "bin/reap-it"
+    "schedule-it": "bin/schedule-it"
   },
   "engines": {
     "node": ">= 0.10.0"
