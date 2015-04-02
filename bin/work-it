@@ -8,17 +8,17 @@ var argv = require('minimist')(process.argv.slice(2));
 var usage = function(message) {
   if (message) {
     console.log('Error:', message);
-    console.log();
+    console.log('');
   }
   console.log('Usage: work-it [options] <command-name> <worker-file>');
   console.log('Usage: work-it -v');
-  console.log();
+  console.log('');
   console.log('Version:', workit.version);
-  console.log();
+  console.log('');
   console.log('Options:');
   console.log('  -c <file>         Config file         [default: workit.json]');
   console.log('  -k <concurrency>  Concurrency level   [default: 1]');
-  console.log();
+  console.log('');
   
   process.exit(1);
 };

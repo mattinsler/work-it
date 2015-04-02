@@ -113,3 +113,8 @@ taskManager.workingTasks().then(console.log);
 // tasks older than 5 seconds ago
 taskManager.workingTasksOlderThan(5000).then(console.log);
 ```
+
+## Debug and Status Messages
+
+To see debug and status messages from `work-it`, just add `DEBUG=work-it:*` to your environment.
+

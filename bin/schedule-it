@@ -8,16 +8,16 @@ var argv = require('minimist')(process.argv.slice(2));
 var usage = function(message) {
   if (message) {
     console.log('Error:', message);
-    console.log();
+    console.log('');
   }
   console.log('Usage: schedule-it [options] <command-name> <task-data>');
   console.log('Usage: schedule-it -v');
-  console.log();
+  console.log('');
   console.log('Version:', workit.version);
-  console.log();
+  console.log('');
   console.log('Options:');
   console.log('  -c <file>         Config file         [default: workit.json]');
-  console.log();
+  console.log('');
   
   process.exit(1);
 };
