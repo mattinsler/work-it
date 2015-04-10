@@ -13,7 +13,8 @@ local skippedIds = {}
 
 for idx, id in pairs(ids) do
   local data = redis.call('HMGET', 't:' .. id, 'a', 'r', 'rc')
-  if data ~= nil and data[1] == 'w' then
+  
+  if data and data[1] and data[1] == 'w' and data[2] then
     -- set state to queued and increment reaped count
     redis.call('HMSET', 't:' .. id, 'a', 'q', 'rc', tonumber(data[3] or '0') + 1)
     redis.call('LPUSH', 'q:' .. data[2], id)
