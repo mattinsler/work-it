@@ -1,6 +1,8 @@
 CREATE DATABASE tasks;
 
-GRANT ALL ON tasks.* TO 'read-write'@'%' IDENTIFIED BY '8fdc21e776def2471015f6fcfc0663c942c7b18e593a4b955d30a208c837c32a';
+USE tasks;
+
+GRANT ALL ON tasks.* TO 'root'@'%' IDENTIFIED BY 'password';
 
 CREATE TABLE tasks (
   id BINARY(16) NOT NULL PRIMARY KEY,
@@ -50,3 +52,5 @@ CREATE OR REPLACE VIEW task_executions AS
   FROM tasks t
     JOIN executions ex ON (ex.task_id = t.id)
     LEFT JOIN execution_errors er ON (er.id = ex.error_id);
+
+CREATE INDEX idx_success_finished_at ON executions (success, finished_at);
