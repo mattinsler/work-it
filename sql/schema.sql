@@ -53,4 +53,6 @@ CREATE OR REPLACE VIEW task_executions AS
     JOIN executions ex ON (ex.task_id = t.id)
     LEFT JOIN execution_errors er ON (er.id = ex.error_id);
 
+CREATE INDEX idx_started_at ON executions (started_at);
+CREATE INDEX idx_finished_at ON executions (finished_at);
 CREATE INDEX idx_success_finished_at ON executions (success, finished_at);

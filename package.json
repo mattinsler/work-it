@@ -1,7 +1,7 @@
 {
   "name": "work-it",
   "description": "Worker system with pluggable components",
-  "version": "0.3.12",
+  "version": "0.3.13",
   "homepage": "https://github.com/mattinsler/work-it",
   "author": {
     "name": "Matt Insler",
@@ -30,7 +30,7 @@
     "node": ">= 0.10.0"
   },
   "dependencies": {
-    "access-mongo": "^0.1.5",
+    "access-mongo": "^0.1.8",
     "aws-sdk": "^2.1.16",
     "byline": "^4.2.1",
     "chalk": "^1.0.0",
