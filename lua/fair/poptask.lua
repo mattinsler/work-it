@@ -12,7 +12,7 @@ local function pop ()
   if fairKey == false then
     return nil
   else
-    local id = redis.call('RPOP', 'q:' .. fairKey)
+    local id = redis.call('RPOP', 'fq:' .. fairKey)
 
     if id == false then
       return false

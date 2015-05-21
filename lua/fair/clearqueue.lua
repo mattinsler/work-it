@@ -6,7 +6,7 @@
 local fairKeys = redis.call('LRANGE', KEYS[1], 0, -1)
 
 for x = 1, #fairKeys do
-  fairKeys[x] = 'q:' .. fairKeys[x]
+  fairKeys[x] = 'fq:' .. fairKeys[x]
 
   local ids = redis.call('LRANGE', fairKeys[x], 0, -1)
   for y = 1, #ids do
