@@ -10,11 +10,10 @@ for x = 1, #fairKeys do
 
   local ids = redis.call('LRANGE', fairKeys[x], 0, -1)
   for y = 1, #ids do
-    ids[y] = 't:' .. ids[y]
+    redis.call('DEL', 't:' .. ids[y])
   end
 
   redis.call('DEL', fairKeys[x])
-  redis.call('DEL', unpack(ids))
 end
 
 return redis.call('DEL', KEYS[1])

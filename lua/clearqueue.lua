@@ -4,8 +4,7 @@
 local ids = redis.call('LRANGE', KEYS[1], 0, -1)
 
 for x = 1, #ids do
-  ids[x] = 't:' .. ids[x]
+  redis.call('DEL', 't:' .. ids[x])
 end
 
-redis.call('DEL', KEYS[1])
-return redis.call('DEL', unpack(ids))
+return redis.call('DEL', KEYS[1])
